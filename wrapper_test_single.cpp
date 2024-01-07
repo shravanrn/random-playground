@@ -97,7 +97,7 @@ WRAPPER_CLASS_MACRO_3(BODY NONE_MOVECONSTRUCTOR, false, false, COPY_ASSIGNABLE, 
 
 // Iterate over COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE
 #define TRIVIAL_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base &) = default;
-#define NONTRIVIAL_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_assignable_v<T>) { m_value = aArg.m_value; }
+#define NONTRIVIAL_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_assignable_v<T>) { m_value = aArg.m_value; return *this; }
 #define NONE_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base &) = delete;
 
 #define WRAPPER_CLASS_MACRO_5(BODY, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                                 \
@@ -107,7 +107,7 @@ WRAPPER_CLASS_MACRO_4(BODY NONE_COPYASSIGNABLE, false, false, MOVE_ASSIGNABLE, T
 
 // Iterate over MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE
 #define TRIVIAL_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base &&) = default;
-#define NONTRIVIAL_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base && aArg) noexcept(std::is_nothrow_move_assignable_v<T>) { m_value = std::move(aArg.m_value); }
+#define NONTRIVIAL_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base && aArg) noexcept(std::is_nothrow_move_assignable_v<T>) { m_value = std::move(aArg.m_value); return *this; }
 #define NONE_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base &&) = delete;
 
 #define WRAPPER_CLASS_MACRO_6()                                \
@@ -272,6 +272,46 @@ struct moveConstruct_None {
 
 ///////////////////////////////////////////
 
+struct copyAssign_Trivial_NoThrow {
+  int m;
+};
+struct copyAssign_NoTrivial_Nothrow {
+  int m;
+  copyAssign_NoTrivial_Nothrow& operator=(const copyAssign_NoTrivial_Nothrow & aArg) noexcept { m = aArg.m; return *this; }
+};
+
+struct copyAssign_NoTrivial_Throw {
+  int m;
+  copyAssign_NoTrivial_Throw& operator=(const copyAssign_NoTrivial_Throw & aArg) noexcept(false) { m = aArg.m; return *this; }
+};
+
+struct copyAssign_None {
+  int m;
+  copyAssign_None& operator=(const copyAssign_None &) = delete;
+};
+
+///////////////////////////////////////////
+
+struct moveAssign_Trivial_NoThrow {
+  int m;
+};
+struct moveAssign_NoTrivial_Nothrow {
+  int m;
+  moveAssign_NoTrivial_Nothrow& operator=(moveAssign_NoTrivial_Nothrow && aArg) noexcept { m = std::move(aArg.m); return *this; }
+};
+
+struct moveAssign_NoTrivial_Throw {
+  int m;
+  moveAssign_NoTrivial_Throw& operator=(moveAssign_NoTrivial_Throw && aArg) noexcept(false) { m = std::move(aArg.m); return *this; }
+};
+
+struct moveAssign_None {
+  int m;
+  moveAssign_None& operator=(moveAssign_None &&) = delete;
+};
+
+///////////////////////////////////////////
+
 #include <iostream>
 #include <string>
 
@@ -279,8 +319,8 @@ struct moveConstruct_None {
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-#define MATCH_CHECK(wrapper, trait, T) std::cout << "  " << #trait << ": " << trait<T> << ", " << (trait<T> == trait<wrapper<T>>? ANSI_COLOR_GREEN "Match" ANSI_COLOR_RESET : ANSI_COLOR_RED "!!!!!!!!!!!NOMATCH!!!!!!" ANSI_COLOR_RESET) << '\n'
-#define MATCH_CHECK2(wrapper, trait, T) if (trait<T> != trait<wrapper<T>>) { MATCH_CHECK2(wrapper, trait, T); }
+#define MATCH_CHECK2(wrapper, trait, T) std::cout << "  " << #trait << ": " << trait<T> << ", " << (trait<T> == trait<wrapper<T>>? ANSI_COLOR_GREEN "Match" ANSI_COLOR_RESET : ANSI_COLOR_RED "!!!!!!!!!!!NOMATCH!!!!!!" ANSI_COLOR_RESET) << '\n'
+#define MATCH_CHECK(wrapper, trait, T) if (trait<T> != trait<wrapper<T>>) { MATCH_CHECK2(wrapper, trait, T);  abort(); }
 
 template<typename T>
 constexpr bool is_constructible_int_charp_v = std::is_constructible_v<T, int&, char*&>;
@@ -363,6 +403,14 @@ int main()
   printStatus(optional_storage_base, moveConstruct_NoTrivial_Nothrow);
   printStatus(optional_storage_base, moveConstruct_NoTrivial_Throw);
   printStatus(optional_storage_base, moveConstruct_None);
+  printStatus(optional_storage_base, copyAssign_Trivial_NoThrow);
+  printStatus(optional_storage_base, copyAssign_NoTrivial_Nothrow);
+  printStatus(optional_storage_base, copyAssign_NoTrivial_Throw);
+  printStatus(optional_storage_base, copyAssign_None);
+  printStatus(optional_storage_base, moveAssign_Trivial_NoThrow);
+  printStatus(optional_storage_base, moveAssign_NoTrivial_Nothrow);
+  printStatus(optional_storage_base, moveAssign_NoTrivial_Throw);
+  printStatus(optional_storage_base, moveAssign_None);
 
   printStatus(optional_storage_base, destructor_Trivial_NoThrow);
   printStatus(optional_storage_base, destructor_NoTrivial_Nothrow);

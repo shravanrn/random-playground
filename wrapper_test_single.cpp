@@ -55,10 +55,76 @@ struct optional_storage_base<T, TRIVIALLY_CONSTRUCTIBLE, DESTRUCTIBLE, TRIVIALLY
   explicit optional_storage_base(U&&... u) noexcept(std::is_nothrow_constructible_v<T, U...>): m_value(std::forward<U>(u)...) {}                                                                                                                                                             \
                                                                                                                                                                                                                                                                                              \
   BODY                                                                                                                                                                                                                                                                                       \
+                                                                                                                                                                                                                                                                                             \
+  inline constexpr auto& operator*() & noexcept(noexcept(*m_value)) { return *m_value; }                                                                                                                                                                                                     \
+  inline constexpr const auto& operator*() const & noexcept(noexcept(*m_value)) { return *m_value; }                                                                                                                                                                                         \
+  inline constexpr auto&& operator*() && noexcept(noexcept(*std::move(m_value))) { return *std::move(m_value); }                                                                                                                                                                             \
+  inline constexpr const auto&& operator*() const && noexcept(noexcept(*std::move(m_value))) { return *std::move(m_value); }                                                                                                                                                                 \
+                                                                                                                                                                                                                                                                                             \
+  inline constexpr auto& operator&() & noexcept(noexcept(&m_value)) { return &m_value; }                                                                                                                                                                                                     \
+  inline constexpr const auto& operator&() const & noexcept(noexcept(&m_value)) { return &m_value; }                                                                                                                                                                                         \
+  inline constexpr auto&& operator&() && noexcept(noexcept(&std::move(m_value))) { return &std::move(m_value); }                                                                                                                                                                             \
+  inline constexpr const auto&& operator&() const && noexcept(noexcept(&std::move(m_value))) { return &std::move(m_value); }                                                                                                                                                                 \
 };
 
+/* Compares two optional_storage_base objects */
+template <class T, class U>
+inline constexpr auto operator==(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value == rhs.m_value)) { return lhs.m_value == rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator!=(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value != rhs.m_value)) { return lhs.m_value != rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator<(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value < rhs.m_value)) { return lhs.m_value < rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator>(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value > rhs.m_value)) { return lhs.m_value > rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator<=(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value <= rhs.m_value)) { return lhs.m_value <= rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator>=(const optional_storage_base<T> &lhs, const optional_storage_base<U> &rhs) noexcept(noexcept(lhs.m_value >= rhs.m_value)) { return lhs.m_value >= rhs.m_value; }
+
+/* Compares the optional_storage_base with a value */
+template <class T, class U>
+inline constexpr auto operator==(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value == rhs)) { return lhs.m_value == rhs; }
+
+template <class T, class U>
+inline constexpr auto operator==(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs == rhs.m_value)) { return lhs == rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator!=(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value != rhs)) { return lhs.m_value != rhs; }
+
+template <class T, class U>
+inline constexpr auto operator!=(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs != rhs.m_value)) { return lhs != rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator<(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value < rhs)) { return lhs.m_value < rhs; }
+
+template <class T, class U>
+inline constexpr auto operator<(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs < rhs.m_value)) { return lhs < rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator<=(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value <= rhs)) { return lhs.m_value <= rhs; }
+
+template <class T, class U>
+inline constexpr auto operator<=(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs <= rhs.m_value)) { return lhs <= rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator>(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value > rhs)) { return lhs.m_value > rhs; }
+
+template <class T, class U>
+inline constexpr auto operator>(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs > rhs.m_value)) { return lhs > rhs.m_value; }
+
+template <class T, class U>
+inline constexpr auto operator>=(const optional_storage_base<T> &lhs, const U &rhs) noexcept(noexcept(lhs.m_value >= rhs)) { return lhs.m_value >= rhs; }
+
+template <class T, class U>
+inline constexpr auto operator>=(const U &lhs, const optional_storage_base<T> &rhs) noexcept(noexcept(lhs >= rhs.m_value)) { return lhs >= rhs.m_value; }
+
 // Iterate over TRIVIALLY_CONSTRUCTIBLE
-#define TRIVIAL_CONSTRUCTOR optional_storage_base() = default;
+#define TRIVIAL_CONSTRUCTOR inline optional_storage_base() = default;
 #define NONTRIVIAL_CONSTRUCTOR
 
 #define WRAPPER_CLASS_MACRO_1(BODY, DESTRUCTIBLE, TRIVIALLY_DESTRUCTIBLE, COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                     \
@@ -66,9 +132,9 @@ WRAPPER_CLASS_MACRO_0(BODY TRIVIAL_CONSTRUCTOR, true, DESTRUCTIBLE, TRIVIALLY_DE
 WRAPPER_CLASS_MACRO_0(BODY NONTRIVIAL_CONSTRUCTOR, false, DESTRUCTIBLE, TRIVIALLY_DESTRUCTIBLE, COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE) \
 
 // Iterate over DESTRUCTIBLE, TRIVIALLY_DESTRUCTIBLE
-#define TRIVIAL_DESTRUCTOR ~optional_storage_base() = default;
-#define NONTRIVIAL_DESTRUCTOR ~optional_storage_base() noexcept(std::is_nothrow_destructible_v<T>) { m_value.~T(); }
-#define NONE_DESTRUCTOR ~optional_storage_base() = delete;
+#define TRIVIAL_DESTRUCTOR inline ~optional_storage_base() = default;
+#define NONTRIVIAL_DESTRUCTOR inline ~optional_storage_base() noexcept(std::is_nothrow_destructible_v<T>) { m_value.~T(); }
+#define NONE_DESTRUCTOR inline ~optional_storage_base() = delete;
 
 #define WRAPPER_CLASS_MACRO_2(BODY, COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                            \
 WRAPPER_CLASS_MACRO_1(BODY TRIVIAL_DESTRUCTOR, true, true, COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)     \
@@ -76,9 +142,9 @@ WRAPPER_CLASS_MACRO_1(BODY NONTRIVIAL_DESTRUCTOR, true, false, COPY_CONSTRUCTIBL
 WRAPPER_CLASS_MACRO_1(BODY NONE_DESTRUCTOR, false, false, COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)      \
 
 // Iterate over COPY_CONSTRUCTIBLE, TRIVIALLY_COPY_CONSTRUCTIBLE
-#define TRIVIAL_COPYCONSTRUCTOR optional_storage_base(const optional_storage_base &) = default;
-#define NONTRIVIAL_COPYCONSTRUCTOR optional_storage_base(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_constructible_v<T>) : m_value(aArg.m_value) { }
-#define NONE_COPYCONSTRUCTOR optional_storage_base(const optional_storage_base &) = delete;
+#define TRIVIAL_COPYCONSTRUCTOR inline optional_storage_base(const optional_storage_base &) = default;
+#define NONTRIVIAL_COPYCONSTRUCTOR inline optional_storage_base(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_constructible_v<T>) : m_value(aArg.m_value) { }
+#define NONE_COPYCONSTRUCTOR inline optional_storage_base(const optional_storage_base &) = delete;
 
 #define WRAPPER_CLASS_MACRO_3(BODY, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                                 \
 WRAPPER_CLASS_MACRO_2(BODY TRIVIAL_COPYCONSTRUCTOR, true, true, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)     \
@@ -86,9 +152,9 @@ WRAPPER_CLASS_MACRO_2(BODY NONTRIVIAL_COPYCONSTRUCTOR, true, false, MOVE_CONSTRU
 WRAPPER_CLASS_MACRO_2(BODY NONE_COPYCONSTRUCTOR, false, false, MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)      \
 
 // Iterate over MOVE_CONSTRUCTIBLE, TRIVIALLY_MOVE_CONSTRUCTIBLE
-#define TRIVIAL_MOVECONSTRUCTOR optional_storage_base(optional_storage_base &&) = default;
-#define NONTRIVIAL_MOVECONSTRUCTOR optional_storage_base(optional_storage_base && aArg) noexcept(std::is_nothrow_move_constructible_v<T>) : m_value(std::move(aArg.m_value)) { }
-#define NONE_MOVECONSTRUCTOR optional_storage_base(optional_storage_base &&) = delete;
+#define TRIVIAL_MOVECONSTRUCTOR inline optional_storage_base(optional_storage_base &&) = default;
+#define NONTRIVIAL_MOVECONSTRUCTOR inline optional_storage_base(optional_storage_base && aArg) noexcept(std::is_nothrow_move_constructible_v<T>) : m_value(std::move(aArg.m_value)) { }
+#define NONE_MOVECONSTRUCTOR inline optional_storage_base(optional_storage_base &&) = delete;
 
 #define WRAPPER_CLASS_MACRO_4(BODY, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                                 \
 WRAPPER_CLASS_MACRO_3(BODY TRIVIAL_MOVECONSTRUCTOR, true, true, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)     \
@@ -96,9 +162,9 @@ WRAPPER_CLASS_MACRO_3(BODY NONTRIVIAL_MOVECONSTRUCTOR, true, false, COPY_ASSIGNA
 WRAPPER_CLASS_MACRO_3(BODY NONE_MOVECONSTRUCTOR, false, false, COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)      \
 
 // Iterate over COPY_ASSIGNABLE, TRIVIALLY_COPY_ASSIGNABLE
-#define TRIVIAL_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base &) = default;
-#define NONTRIVIAL_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_assignable_v<T>) { m_value = aArg.m_value; return *this; }
-#define NONE_COPYASSIGNABLE optional_storage_base& operator=(const optional_storage_base &) = delete;
+#define TRIVIAL_COPYASSIGNABLE inline optional_storage_base& operator=(const optional_storage_base &) = default;
+#define NONTRIVIAL_COPYASSIGNABLE inline optional_storage_base& operator=(const optional_storage_base & aArg) noexcept(std::is_nothrow_copy_assignable_v<T>) { m_value = aArg.m_value; return *this; }
+#define NONE_COPYASSIGNABLE inline optional_storage_base& operator=(const optional_storage_base &) = delete;
 
 #define WRAPPER_CLASS_MACRO_5(BODY, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)                                 \
 WRAPPER_CLASS_MACRO_4(BODY TRIVIAL_COPYASSIGNABLE, true, true, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)     \
@@ -106,9 +172,9 @@ WRAPPER_CLASS_MACRO_4(BODY NONTRIVIAL_COPYASSIGNABLE, true, false, MOVE_ASSIGNAB
 WRAPPER_CLASS_MACRO_4(BODY NONE_COPYASSIGNABLE, false, false, MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE)      \
 
 // Iterate over MOVE_ASSIGNABLE, TRIVIALLY_MOVE_ASSIGNABLE
-#define TRIVIAL_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base &&) = default;
-#define NONTRIVIAL_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base && aArg) noexcept(std::is_nothrow_move_assignable_v<T>) { m_value = std::move(aArg.m_value); return *this; }
-#define NONE_MOVEASSIGNABLE optional_storage_base& operator=(optional_storage_base &&) = delete;
+#define TRIVIAL_MOVEASSIGNABLE inline optional_storage_base& operator=(optional_storage_base &&) = default;
+#define NONTRIVIAL_MOVEASSIGNABLE inline optional_storage_base& operator=(optional_storage_base && aArg) noexcept(std::is_nothrow_move_assignable_v<T>) { m_value = std::move(aArg.m_value); return *this; }
+#define NONE_MOVEASSIGNABLE inline optional_storage_base& operator=(optional_storage_base &&) = delete;
 
 #define WRAPPER_CLASS_MACRO_6()                                \
 WRAPPER_CLASS_MACRO_5( TRIVIAL_MOVEASSIGNABLE, true, true)     \
@@ -312,6 +378,20 @@ struct moveAssign_None {
 
 ///////////////////////////////////////////
 
+struct operatorDeref {
+
+  int m1; int m2; int m3; int m4;
+  int* p1; int* p2; int* p3; int* p4;
+  operatorDeref() : m1(1), m2(2), m3(3), m4(4), p1(&m1), p2(&m2), p3(&m3), p4(&m4) {}
+
+  constexpr auto& operator*() & noexcept { return *p1; }
+  constexpr const auto& operator*() const & { return *p2; }
+  constexpr auto&& operator*() && { return std::move(*p3); }
+  constexpr const auto&& operator*() const && { return std::move(*p4); }
+};
+
+///////////////////////////////////////////
+
 #include <iostream>
 #include <string>
 
@@ -365,6 +445,11 @@ void rlbox_test_helper_print_type() {
 #endif
 }
 
+template<typename T>
+class optional_derived : public optional_storage_base<T> {};
+
+#define TEST_ASSERT(...) if (!(__VA_ARGS__)) { std::cout << ANSI_COLOR_RED "!!!!!!!!!!!Test failed!!!!!! " ANSI_COLOR_RESET << __FILE__ ":"  << __LINE__ << "\n"; }
+
 int main()
 {
   constructor_Explicit_Single c4 {1};
@@ -416,4 +501,40 @@ int main()
   printStatus(optional_storage_base, destructor_NoTrivial_Nothrow);
   printStatus(optional_storage_base, destructor_NoTrivial_Throw);
   printStatus(optional_storage_base, destructor_None);
+
+  char* p = nullptr;
+  int test = 3;
+
+  optional_storage_base<int> test2 = 3;
+  TEST_ASSERT(test2 == 3);
+
+  std::cout << std::boolalpha << noexcept(test == 3) << " " << noexcept(test2 == 3) << "\n";
+
+  {
+    operatorDeref o;
+    optional_storage_base<operatorDeref> wo;
+    TEST_ASSERT(*o == *wo);
+    TEST_ASSERT(noexcept(*o) == noexcept(*wo));
+  }
+  {
+    const operatorDeref o;
+    const optional_storage_base<operatorDeref> wo;
+    TEST_ASSERT(*o == *wo);
+    TEST_ASSERT(noexcept(*o) == noexcept(*wo));
+  }
+  {
+    const operatorDeref o;
+    optional_storage_base<const operatorDeref> wo;
+    TEST_ASSERT(*o == *wo);
+    TEST_ASSERT(noexcept(*o) == noexcept(*wo));
+  }
+  {
+    TEST_ASSERT(*operatorDeref() == *optional_storage_base<operatorDeref>());
+    TEST_ASSERT(noexcept(*operatorDeref()) == noexcept(*optional_storage_base<operatorDeref>()));
+  }
+  {
+    using const_ty = const operatorDeref;
+    TEST_ASSERT(*const_ty() == *optional_storage_base<const_ty>());
+    TEST_ASSERT(noexcept(*const_ty()) == noexcept(*optional_storage_base<const_ty>()));
+  }
 }

@@ -35,5 +35,8 @@ wrapper_test_single.out: wrapper_test_single.cpp
 wrapper_test_cpp20.out: wrapper_test_cpp20.cpp
 	g++ -O0 -g -std=c++20 wrapper_test_cpp20.cpp -o $@
 
+segments_clobber_test.out: segments_clobber_test.c
+	clang $< -o $@ -O0 -mfsgsbase -g
+
 clean:
 	rm -rf ./*.out

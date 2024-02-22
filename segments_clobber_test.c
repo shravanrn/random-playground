@@ -14,7 +14,7 @@
 
 #define Check(cond) if (!(cond)) { puts("Condition check " #cond "failed\n"); abort(); }
 
-void sleep(uint64_t ms) {
+void my_sleep(uint64_t ms) {
 #ifdef _WIN32
     Sleep(ms);
 #else
@@ -22,11 +22,11 @@ void sleep(uint64_t ms) {
 #endif
 }
 
-void yield() {
+void my_yield() {
 #ifdef _WIN32
     SwitchToThread();
 #else
-    Check(sched_yield(ms * 1000) == 0);
+    Check(sched_yield() == 0);
 #endif
 }
 
@@ -57,8 +57,8 @@ int main(int argc, char const *argv[])
     uintptr_t fs_changed_yield = fs_init;
     uintptr_t gs_changed_yield = gs_init;
     for(int i = 0; i < 100; i++) {
-        sleep(1000);
-        yield();
+        my_sleep(10);
+        my_yield();
         uintptr_t fs_curr = get_fs_base();
         uintptr_t gs_curr = get_gs_base();
 
@@ -71,14 +71,23 @@ int main(int argc, char const *argv[])
     // clobber check
     char test_buff [128];
     uintptr_t clobber_test_val = (uintptr_t) test_buff;
+
+    printf("Clobbering segments to %p\n", (void*) clobber_test_val);
+
     set_fs_base(clobber_test_val);
     set_gs_base(clobber_test_val);
 
     uintptr_t fs_changed_clobber = clobber_test_val;
     uintptr_t gs_changed_clobber = clobber_test_val;
     for(int i = 0; i < 100; i++) {
-        sleep(1000);
-        yield();
+        my_sleep(10);
+        my_yield();
+
+        FILE *f = fopen("tmp.txt", "w");
+        Check(f != 0);
+        fputs("Hello\n", f);
+        Check(fclose(f) == 0);
+
         uintptr_t fs_curr = get_fs_base();
         uintptr_t gs_curr = get_gs_base();
 
@@ -87,6 +96,8 @@ int main(int argc, char const *argv[])
     }
 
     printf("After clobbering, FS: %p, GS: %p\n", (void*) fs_changed_clobber, (void*) gs_changed_clobber);
+
+    printf("Done\n");
 
     return 0;
 }

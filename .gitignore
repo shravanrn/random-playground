@@ -1,3 +1,6 @@
 *.out
 *.o
 *.pre.cpp
+segments_clobber_test.exe
+segments_clobber_test.obj
+tmp.txt

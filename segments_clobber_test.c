@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -68,14 +67,25 @@ int main(int argc, char const *argv[])
 
     printf("After yielding, FS: %p, GS: %p\n", (void*) fs_changed_yield, (void*) gs_changed_yield);
 
+    int seg_num;
+    puts("Which segment do you want to clobber: fs (1), gs (2)?\n");
+    scanf("%d",&seg_num);
+    int clobber_fs = seg_num == 1;
+    int clobber_gs = seg_num == 2;
+
+    Check(clobber_fs || clobber_gs);
+
+
     // clobber check
     char test_buff [128];
     uintptr_t clobber_test_val = (uintptr_t) test_buff;
 
     printf("Clobbering segments to %p\n", (void*) clobber_test_val);
 
-    set_fs_base(clobber_test_val);
-    set_gs_base(clobber_test_val);
+    if (clobber_fs){ set_fs_base(clobber_test_val); }
+    if (clobber_gs){ set_gs_base(clobber_test_val); }
+
+    printf("After clobbering, FS: %p, GS: %p\n", (void*) get_fs_base(), (void*) get_gs_base());
 
     uintptr_t fs_changed_clobber = clobber_test_val;
     uintptr_t gs_changed_clobber = clobber_test_val;
@@ -95,7 +105,7 @@ int main(int argc, char const *argv[])
         if (gs_curr != clobber_test_val) { gs_changed_clobber = gs_curr; }
     }
 
-    printf("After clobbering, FS: %p, GS: %p\n", (void*) fs_changed_clobber, (void*) gs_changed_clobber);
+    printf("After clobbering and yielding, FS: %p, GS: %p\n", (void*) fs_changed_clobber, (void*) gs_changed_clobber);
 
     printf("Done\n");
 

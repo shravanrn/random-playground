@@ -1,42 +1,28 @@
-hello_world.out: hello_world.c
-	gcc -O0 -g $< -o $@
+CC:=clang
+CXX:=clang++
+CFLAGS+=-O0 -g
+CXXFLAGS+=$(CFLAGS) -std=c++20
+LDFLAGS+=-lm
 
-segtest.out: segtest.c
-	gcc -mfsgsbase -O0 -g $< -o $@
+BINARY_FILES=$(filter-out Makefile, $(patsubst ./%, %, $(shell find . -maxdepth 1 -type f ! -name "*.*")))
+PRE_FILES=$(patsubst ./%, %, $(shell find . -maxdepth 1 -type f -name "*.pre.cpp"))
+OUT_FILES=./dummy $(BINARY_FILES) $(PRE_FILES)
 
-segtest_32.out: segtest.c
-	gcc -m32 -O0 -g $< -o $@
+%_32: %.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -m32 $< -o $@
 
-floatzone_test.out: floatzone_test.c
-	gcc -O0 -g $< -o $@ -lm
+%.pre.cpp: %.cpp
+	$(CXX) -E $< -o $@
 
-watchpoint_test.out: watchpoint_test.c
-	gcc -O0 -g $< -o $@
+segtest: CFLAGS+=-mfsgsbase
 
-fp_exceptions_enable.out: fp_exceptions_enable.c
-	gcc -O0 -g $< -o $@ -lm
+pdep_test: CFLAGS+=-mbmi2
 
-pdep_test.out: pdep_test.c
-	gcc -mbmi2 -O0 -g $< -o $@
+optional_test: optional_test/test.cpp
 
-sigaltstacktest.out: sigaltstacktest.c
+wrapper_test_single: | wrapper_test_single.pre.cpp
 
-.PHONY: optional_test.out
-optional_test.out:
-	g++ -O0 -g optional_test/test.cpp -o $@
-
-wrapper_test.out: wrapper_test.cpp
-	g++ -O0 -g wrapper_test.cpp -o $@
-
-wrapper_test_single.out: wrapper_test_single.cpp
-	g++ -O0 -g -E wrapper_test_single.cpp -o wrapper_test_single.pre.cpp
-	g++ -O0 -g wrapper_test_single.cpp -o $@
-
-wrapper_test_cpp20.out: wrapper_test_cpp20.cpp
-	g++ -O0 -g -std=c++20 wrapper_test_cpp20.cpp -o $@
-
-segments_clobber_test.out: segments_clobber_test.c
-	clang $< -o $@ -O0 -mfsgsbase -g
+segments_clobber_test: CFLAGS+=-mfsgsbase
 
 clean:
-	rm -rf ./*.out
+	rm -rf $(OUT_FILES)

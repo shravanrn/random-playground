@@ -105,7 +105,7 @@ void test()
     printf("Buffer 1 char expected: %c, got: %c\n", buffer1[0], *buffer1_seg);
 #else
     uint16_t sel = set_ldt(buffer1, size);
-    asm("\n")
+    asm("\n");
 #endif
 }
 

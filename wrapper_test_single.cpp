@@ -537,4 +537,24 @@ int main()
     TEST_ASSERT(*const_ty() == *optional_storage_base<const_ty>());
     TEST_ASSERT(noexcept(*const_ty()) == noexcept(*optional_storage_base<const_ty>()));
   }
+
+  // {
+  //   std::optional<int> a1 = 3;
+  //   std::optional<int> a2 = 4;
+
+  //   int i1 = 3;
+  //   int i2 = 4;
+
+  //   optional_storage_base<std::optional<int>> f1 = 3;
+  //   optional_storage_base<std::optional<int>> f1b = 3;
+  //   optional_storage_base<std::optional<int>> f2 = 4;
+
+  //   TEST_ASSERT(f1 == f1b);
+
+  //   TEST_ASSERT(f1 == a1);
+  //   TEST_ASSERT(f1 == i1);
+
+  //   // TEST_ASSERT(a1 == f1);
+  //   TEST_ASSERT(i1 == f1);
+  // }
 }

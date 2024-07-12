@@ -18,6 +18,8 @@ segtest: CFLAGS+=-mfsgsbase
 
 pdep_test: CFLAGS+=-mbmi2
 
+bitinst_tests: CFLAGS+=-mssse3 -mbmi -msse4.1
+
 optional_test: optional_test/test.cpp
 
 wrapper_test_single: | wrapper_test_single.pre.cpp

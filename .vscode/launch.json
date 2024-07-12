@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "segtest",
+            "name": "mmap_test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/segtest",
+            "program": "${workspaceFolder}/mmap_test",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
+#include <errno.h>
 
 #include <immintrin.h> /* compiler intrinsics */
 
@@ -7,6 +9,15 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>     /* Definition of SYS_* constants */
 #include <unistd.h>
+
+#include <asm/prctl.h>        /* Definition of ARCH_* constants */
+
+#include <sys/auxv.h>
+#include <elf.h>
+
+#ifndef HWCAP2_FSGSBASE
+#define HWCAP2_FSGSBASE        (1 << 1)
+#endif
 
 int modify_ldt(int func, void *ptr, unsigned long bytecount) {
   return syscall(__NR_modify_ldt, func, ptr, bytecount);
@@ -100,6 +111,12 @@ void test()
     printf("Buffers: %p, %p\n", buffer1, buffer2);
 
 #if __x86_64__
+    unsigned val = getauxval(AT_HWCAP2);
+
+    if (val & HWCAP2_FSGSBASE) {
+      printf("FSGSBASE enabled\n");
+    }
+
     _writegsbase_u64((uintptr_t)&buffer1[1]);
     char __seg_gs * buffer1_seg = (char __seg_gs *) -1;
     printf("Buffer 1 char expected: %c, got: %c\n", buffer1[0], *buffer1_seg);
@@ -107,6 +124,15 @@ void test()
     uint16_t sel = set_ldt(buffer1, size);
     asm("\n");
 #endif
+
+  if (syscall(SYS_arch_prctl, ARCH_SET_GS, (uintptr_t)&buffer2[1]) != 0){
+    printf("Syscall SYS_arch_prctl error: %s\n", strerror(errno));
+  }
+
+  char __seg_gs * buffer2_seg = (char __seg_gs *) -1;
+  printf("Buffer 2 char expected: %c, got: %c\n", buffer2[0], *buffer2_seg);
+
+
 }
 
 int main(int argc, char const *argv[]) {

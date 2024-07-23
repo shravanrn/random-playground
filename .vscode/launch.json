@@ -99,6 +99,17 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
+{
+    "name": "segments_clobber_test.exe",
+    "type": "cppvsdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}/segments_clobber_test.exe",
+    "args": [],
+    "stopAtEntry": true,
+    "cwd": "${fileDirname}",
+    "environment": [],
+    "console": "externalTerminal"
+},
     ]
 }

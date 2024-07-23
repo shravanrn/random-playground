@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <immintrin.h> /* compiler intrinsics */
 
@@ -11,6 +12,7 @@
 #else
 #include <unistd.h> // usleep
 #include <sched.h>  // sched_yield
+#include <sys/mman.h> // mmap
 #endif
 
 #define Check(cond) if (!(cond)) { puts("Condition check " #cond "failed\n"); abort(); }
@@ -47,6 +49,70 @@ void set_gs_base(uintptr_t value) {
     _writegsbase_u64(value);
 }
 
+void* my_mmap(void* hint, size_t size, bool readable, bool writeable) {
+  if (writeable && ! readable) {
+    abort();
+  }
+#ifdef _WIN32
+  DWORD map_prot = PAGE_NOACCESS;
+  if (writeable) {
+    map_prot = PAGE_READWRITE;
+  } else {
+    map_prot = PAGE_READONLY;
+  }
+
+  void* addr = VirtualAlloc(hint, size, MEM_COMMIT | MEM_RESERVE, map_prot);
+  if (addr == NULL) {
+    abort();
+  }
+#else
+  int map_prot = PROT_NONE;
+  if (readable) {
+    map_prot |= PROT_READ;
+  }
+  if (writeable) {
+    map_prot |= PROT_WRITE;
+  }
+
+  void* addr = mmap(hint, size, MAP_ANONYMOUS | MAP_PRIVATE, map_flags, -1, 0);
+  if (addr == MAP_FAILED) {
+    abort();
+  }
+#endif
+  return addr;
+}
+
+void my_mprotect(void* addr, size_t size, bool readable, bool writeable) {
+  if (writeable && ! readable) {
+    abort();
+  }
+#ifdef _WIN32
+  DWORD map_prot = PAGE_NOACCESS;
+  if (writeable) {
+    map_prot = PAGE_READWRITE;
+  } else {
+    map_prot = PAGE_READONLY;
+  }
+
+  DWORD map_old_prot;
+  if (VirtualProtect(addr, size, map_prot, &map_old_prot) == 0) {
+      abort();
+  }
+#else
+  int map_prot = PROT_NONE;
+  if (readable) {
+    map_prot |= PROT_READ;
+  }
+  if (writeable) {
+    map_prot |= PROT_WRITE;
+  }
+  if (mprotect(addr, size, map_prot) != 0) {
+      abort();
+  }
+#endif
+}
+
+
 int main(int argc, char const *argv[])
 {
     // Init check
@@ -79,9 +145,17 @@ int main(int argc, char const *argv[])
 
 
     // clobber check
-    char test_buff [128];
-    uintptr_t clobber_test_val = (uintptr_t) test_buff;
+    const size_t size = 4096 * 1024;
+    char* test_buff = my_mmap(0, size, true, true);
+#ifdef _WIN32
+    if (clobber_gs) {
+        printf("Copying contents of existing gs segment from %p to %p\n", (void*) gs_init, test_buff);
+        memcpy(test_buff, (void*) gs_init, 4096);
+    }
+#endif
+    my_mprotect(test_buff, size, true, false);
 
+    uintptr_t clobber_test_val = (uintptr_t)test_buff;
     printf("Clobbering segments to %p\n", (void*) clobber_test_val);
 
     if (clobber_fs){ set_fs_base(clobber_test_val); }

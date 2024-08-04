@@ -16,6 +16,8 @@ OUT_FILES=./dummy $(BINARY_FILES) $(PRE_FILES)
 
 segtest: CFLAGS+=-mfsgsbase
 
+segostest: CFLAGS+=-mfsgsbase
+
 pdep_test: CFLAGS+=-mbmi2
 
 bitinst_tests: CFLAGS+=-mssse3 -mbmi -msse4.1

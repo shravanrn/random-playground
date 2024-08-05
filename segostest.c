@@ -68,15 +68,18 @@ int main(int argc, char const *argv[]) {
   }
 #endif
 
-    if (val & HWCAP2_FSGSBASE) {
-      printf("FSGSBASE enabled\n");
-    } else {
-      printf("FSGSBASE disabled\n");
-    }
+  printf("AUX val AT_HWCAP2: %lu\n", val);
 
-    _writegsbase_u64((uintptr_t)&buffer1[1]);
-    char __seg_gs * buffer1_seg = (char __seg_gs *) -1;
-    printf("Buffer 1 char expected: %c, got: %c\n", buffer1[0], *buffer1_seg);
+
+  if (val & HWCAP2_FSGSBASE) {
+    printf("FSGSBASE enabled\n");
+  } else {
+    printf("FSGSBASE disabled\n");
+  }
+
+  _writegsbase_u64((uintptr_t)&buffer1[1]);
+  char __seg_gs * buffer1_seg = (char __seg_gs *) -1;
+  printf("Buffer 1 char expected: %c, got: %c\n", buffer1[0], *buffer1_seg);
 
   if (SYSCALL_SET_GS(&buffer2[1]) != 0){
     printf("Syscall SYS_arch_prctl error: %s\n", strerror(errno));

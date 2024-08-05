@@ -63,8 +63,9 @@ int main(int argc, char const *argv[]) {
   unsigned long val = getauxval(AT_HWCAP2);
 #elif defined(__FreeBSD__) || defined(__OpenBSD__)
   unsigned long val = 0;
-  if (elf_aux_info(AT_HWCAP2, &val, sizeof(unsigned long)) == 0) {
-    printf("elf_aux_info failed\n");
+  int ret = elf_aux_info(AT_HWCAP2, &val, sizeof(unsigned long));
+  if (ret != 0) {
+    printf("elf_aux_info failed: %d\n", ret);
   }
 #endif
 

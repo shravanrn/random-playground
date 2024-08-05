@@ -78,7 +78,7 @@ int main(int argc, char const *argv[]) {
     char __seg_gs * buffer1_seg = (char __seg_gs *) -1;
     printf("Buffer 1 char expected: %c, got: %c\n", buffer1[0], *buffer1_seg);
 
-  if (SYSCALL_SET_GS((uintptr_t)&buffer2[1]) != 0){
+  if (SYSCALL_SET_GS(&buffer2[1]) != 0){
     printf("Syscall SYS_arch_prctl error: %s\n", strerror(errno));
   }
 

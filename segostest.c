@@ -65,7 +65,7 @@ int main(int argc, char const *argv[]) {
   unsigned long val = 0;
   int ret = elf_aux_info(AT_HWCAP2, &val, sizeof(unsigned long));
   if (ret != 0) {
-    printf("elf_aux_info failed: %d\n", ret);
+    printf("elf_aux_info failed: %d (%s). errno: %d (%s)\n", ret, strerror(ret), errno, strerror(errno));
   }
 #endif
 

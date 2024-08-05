@@ -61,11 +61,10 @@ int main(int argc, char const *argv[]) {
 #if defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 18
   // Check for support for userspace wrgsbase instructions
   unsigned long val = getauxval(AT_HWCAP2);
-  wasm_rt_fsgsbase_inst_supported = val & (1 << 1);
 #elif defined(__FreeBSD__) || defined(__OpenBSD__)
   unsigned long val = 0;
   if (elf_aux_info(AT_HWCAP2, &val, sizeof(unsigned long)) == 0) {
-    wasm_rt_fsgsbase_inst_supported = val & (1 << 1);
+    printf("elf_aux_info failed\n");
   }
 #endif
 
